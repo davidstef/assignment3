@@ -1,5 +1,3 @@
-
-
 function checkAuthorization(req, res, next) {
 
     if (req.session) {
@@ -14,5 +12,4 @@ function checkAuthorization(req, res, next) {
         res.redirect('/login')
     }
 }
-
 module.exports = checkAuthorization

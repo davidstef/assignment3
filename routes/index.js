@@ -1,10 +1,12 @@
 const express = require('express')
 const bcrypt = require ('bcrypt')
 const router = express.Router()
-const SALT_ROUNDS = 10
+const { SALT_ROUNDS } = require('../config')
+const { SQL_ARTICLE_SHOW, SQL_REGISTER, SQL_LOGIN} = require('../sql')
+const db = require('../utils/db')
 
 router.get('/', (req, res) => {
-    db.any('SELECT id,title,body FROM articles')
+    db.any(SQL_ARTICLE_SHOW)
         .then((articles) => {
             res.render('index', { articles: articles })
         })
@@ -28,13 +30,12 @@ router.get('/register', (req, res) => {
 
 router.get('/login', (req, res) => {
     res.render('login')
-
 })
 
 router.post('/register', (req, res) => {
-    let username = req.body.username
-    let password = req.body.password
-    db.oneOrNone('SELECT id FROM users WHERE username = $1', [username])
+    const username = req.body.username
+    const password = req.body.password
+    db.oneOrNone(SQL_REGISTER, [username])
         .then((user) => {
             if (user) {
                 res.render('register', { message: "User name already exists!" })
@@ -53,9 +54,9 @@ router.post('/register', (req, res) => {
 
 router.post('/login', (req, res) => {
 
-    let username = req.body.username
-    let password = req.body.password
-    db.oneOrNone('SELECT id,username,password FROM users WHERE username = $1', [username])
+    const username = req.body.username
+    const password = req.body.password
+    db.oneOrNone(SQL_LOGIN, [username])
         .then((user) => {
             if (user) {
                 bcrypt.compare(password, user.password, function (error, result) {
@@ -70,24 +71,9 @@ router.post('/login', (req, res) => {
                         res.render('login', { message: "Invalid username or password" })
                     }
                 })
-
             } else {
                 res.render('login', { message: "Invalid username or password" })
             }
         })
 })
-
-
-
-
-
-
-
 module.exports = router
-
-
-
-
-
-
-
